@@ -106,6 +106,21 @@ con una solución práctica y funcional.
 
 Link de vercel: https://ab-applied-machine-learning.vercel.app
 
+## **11. Logging (POC) y ciclo de feedback**
+
+Como prueba de concepto de monitorización en producción, la aplicación registra logs de predicción
+en el lado del cliente (por sesión), incluyendo:
+- timestamp
+- clase predicha y probabilidades
+- tiempo de inferencia
+- información técnica del navegador (userAgent)
+
+Estos logs se almacenan localmente (localStorage) y se muestran en la interfaz. En un entorno real,
+la misma estructura de eventos podría enviarse a un endpoint serverless (por ejemplo en Vercel) y
+persistirse en una base de datos para análisis y reentrenamiento futuro, manteniendo la privacidad
+al no almacenar imágenes.
+
+
 
 
 
