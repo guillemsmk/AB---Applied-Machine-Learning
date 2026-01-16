@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { loadModel, predict } from "@/lib/predict";
 
 function ProbBar({ label, prob }) {
-  const pct = Math.round(prob * 1000) / 10; // 1 decimal
+  const pct = Math.round(prob * 1000) / 10; 
   return (
     <div style={{ marginTop: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--muted)" }}>
@@ -35,11 +35,33 @@ export default function Page() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [result, setResult] = useState(null);
 
+  
+  const [logs, setLogs] = useState([]);
+
   const best = useMemo(() => {
     if (!result) return null;
     const sorted = [...result.probs].sort((a, b) => b.prob - a.prob);
     return sorted[0];
   }, [result]);
+
+  
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("maskdetector_logs");
+      if (saved) setLogs(JSON.parse(saved));
+    } catch (e) {
+      console.warn("No se pudieron cargar logs:", e);
+    }
+  }, []);
+
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem("maskdetector_logs", JSON.stringify(logs));
+    } catch (e) {
+      console.warn("No se pudieron guardar logs:", e);
+    }
+  }, [logs]);
 
   useEffect(() => {
     async function init() {
@@ -72,10 +94,33 @@ export default function Page() {
     if (!imgRef.current) return;
     setBusy(true);
     setStatus("Analizando…");
+
+    const t0 = performance.now();
+
     try {
       const r = await predict(imgRef.current, labels);
+
+      const t1 = performance.now();
+      const inferenceTimeMs = Math.round((t1 - t0) * 10) / 10; 
+
       setResult(r);
       setStatus("Hecho.");
+
+      
+      const sorted = [...r.probs].sort((a, b) => b.prob - a.prob);
+      const bestLocal = sorted[0];
+
+      const entry = {
+        timestamp: new Date().toISOString(),
+        predictedLabel: r.label,
+        confidence: bestLocal?.prob ?? null,
+        probs: r.probs, 
+        inferenceTimeMs,
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+      };
+
+      
+      setLogs((prev) => [entry, ...prev].slice(0, 50));
     } catch (e) {
       console.error(e);
       setStatus("Error en predicción. Revisa la consola.");
@@ -88,6 +133,10 @@ export default function Page() {
     setResult(null);
     setPreviewUrl(null);
     setStatus("Modelo listo. Sube una imagen.");
+  }
+
+  function onClearLogs() {
+    setLogs([]);
   }
 
   return (
@@ -135,7 +184,7 @@ export default function Page() {
               <input type="file" accept="image/*" onChange={onFileChange} style={{ display: "none" }} />
             </label>
 
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 onClick={onPredict}
                 disabled={!previewUrl || busy}
@@ -166,6 +215,22 @@ export default function Page() {
                 }}
               >
                 Limpiar
+              </button>
+
+              <button
+                onClick={onClearLogs}
+                disabled={busy || logs.length === 0}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: `1px solid var(--cardBorder)`,
+                  background: "rgba(255,255,255,0.06)",
+                  color: "var(--text)",
+                  cursor: busy || logs.length === 0 ? "not-allowed" : "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Borrar logs
               </button>
             </div>
           </div>
@@ -249,11 +314,59 @@ export default function Page() {
               </div>
             </>
           )}
+
+          {/* Logs */}
+          <div style={{ marginTop: 16 }}>
+            <h3 style={{ margin: 0, fontSize: 14, color: "var(--muted)", fontWeight: 800 }}>
+              Logs de predicción (sesión)
+            </h3>
+
+            {logs.length === 0 ? (
+              <div style={{ marginTop: 10, color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
+                Aún no hay logs. Ejecuta una predicción para registrar eventos.
+              </div>
+            ) : (
+              <div
+                style={{
+                  marginTop: 10,
+                  maxHeight: 260,
+                  overflow: "auto",
+                  padding: 10,
+                  borderRadius: 14,
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                }}
+              >
+                {logs.map((log, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      padding: "10px 8px",
+                      borderBottom: i === logs.length - 1 ? "none" : "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                      {new Date(log.timestamp).toLocaleString()}
+                    </div>
+                    <div style={{ marginTop: 4, fontSize: 13, fontWeight: 800 }}>
+                      {log.predictedLabel}{" "}
+                      <span style={{ fontWeight: 600, color: "var(--muted)" }}>
+                        ({log.confidence != null ? (log.confidence * 100).toFixed(2) : "—"}%)
+                      </span>
+                    </div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: "var(--muted)" }}>
+                      Inference: {log.inferenceTimeMs} ms
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </aside>
       </div>
 
       <footer style={{ marginTop: 18, color: "var(--muted)", fontSize: 12 }}>
-        Proyecto AB · Applied ML · Modelo MobileNetV2 + TFJS
+        Proyecto AB · Applied ML 
       </footer>
     </main>
   );
