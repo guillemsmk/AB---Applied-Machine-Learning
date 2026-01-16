@@ -73,10 +73,7 @@ Hasta el momento se han completado las siguientes etapas:
 - Análisis cualitativo de los errores del modelo, identificando patrones comunes en los casos de fallo y en las predicciones de baja confianza.
 - Exportación del modelo entrenado a formato **TensorFlow.js** para su uso en entornos web.
 - Desarrollo de una aplicación web con **Next.js** que permite al usuario subir una imagen y ejecutar inferencia directamente en el navegador.
-
-Actualmente, la aplicación funciona correctamente en entorno local.  
-El despliegue en producción mediante **Vercel** se realizará en una fase posterior del proyecto.
-
+- Despliegue de la aplicación en producción mediante **Vercel**.
 
 ## **6. Tecnologías utilizadas**
 
@@ -93,7 +90,12 @@ El desarrollo del proyecto ha requerido el uso de diversas tecnologías, tanto p
 Este stack tecnológico permite cubrir todo el ciclo de vida del modelo, desde el entrenamiento hasta su despliegue y uso por parte de usuarios finales.
 
 
-## **7. Nota sobre el enfoque académico**
+## **7. Despligue de la aplicación**
+
+Link de vercel: https://ab-applied-machine-learning.vercel.app
+
+
+## **8. Nota sobre el enfoque académico**
 
 - La justificación de las decisiones técnicas adoptadas.
 - El análisis crítico de los resultados obtenidos.
@@ -101,5 +103,6 @@ Este stack tecnológico permite cubrir todo el ciclo de vida del modelo, desde e
 - La documentación de los problemas encontrados durante el desarrollo y de las soluciones aplicadas.
 
 De esta forma podemos entender por qué un modelo falla o en qué condiciones pierde fiabilidad resulta tan valioso como obtener buenos resultados cuantitativos.
+
 
 

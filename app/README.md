@@ -102,6 +102,10 @@ con una interfaz usable por un usuario final.
 Conecta directamente el trabajo de entrenamiento descrito en el directorio: training/
 con una solución práctica y funcional.
 
+## **10. Despligue de la aplicación**
+
+Link de vercel: https://ab-applied-machine-learning.vercel.app
+
 
 
 
